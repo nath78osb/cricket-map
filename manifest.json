@@ -1,0 +1,29 @@
+{
+  "name": "Cricket Win Predictor",
+  "short_name": "WinPredictor",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait",
+  "description": "Calculate cricket win probabilities and project first innings scores securely offline.",
+  "categories": [
+    "sports",
+    "utilities",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "pwa_assets/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "pwa_assets/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ]
+}
