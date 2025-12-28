@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Win Predictor</title>
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="stylesheet" href="style.css">
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('SW registered!', reg))
+                    .catch(err => console.log('SW failed!', err));
+            });
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="background-glow"></div>
+    <div class="container">
+        <header>
+            <h1>Cricket Win Predictor <span class="accent">AI</span></h1>
+            <p>Advanced Heuristic Chase Probability</p>
+        </header>
+
+        <main class="card glass-panel">
+            <form id="predictor-form">
+                <h3 class="form-section-title">Current Score</h3>
+                <div class="team-inputs">
+                    <div class="input-group">
+                        <label for="batting-team">Batting Team</label>
+                        <input type="text" id="batting-team" placeholder="e.g. India" autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label for="bowling-team">Bowling Team</label>
+                        <input type="text" id="bowling-team" placeholder="e.g. Australia" autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Game Phase Selection -->
+                <div class="mode-toggle-container">
+                    <span class="toggle-label-text">Game Phase: <span class="required-star">*</span></span>
+                    <div class="toggle-wrapper">
+                        <input type="radio" name="game-phase" id="phase-first" value="first" checked>
+                        <label for="phase-first" class="toggle-option">1st Innings (Set Target)</label>
+
+                        <input type="radio" name="game-phase" id="phase-chase" value="chase">
+                        <label for="phase-chase" class="toggle-option">2nd Innings (Chase)</label>
+                    </div>
+                </div>
+
+                <!-- 1st Innings Input -->
+                <div id="first-innings-group" class="input-group">
+                    <label for="first-innings-score">Current Score <span class="required-star">*</span></label>
+                    <input type="number" id="first-innings-score" placeholder="Runs so far" min="0" required>
+                </div>
+
+                <!-- 2nd Innings (Chase) Inputs -->
+                <div id="chase-inputs-section" class="hidden">
+                    <div class="mode-toggle-container">
+                        <span class="toggle-label-text">Runs Input: <span class="required-star">*</span></span>
+                        <div class="toggle-wrapper">
+                            <input type="radio" name="input-mode" id="mode-direct" value="direct" checked>
+                            <label for="mode-direct" class="toggle-option">Runs Needed</label>
+
+                            <input type="radio" name="input-mode" id="mode-target" value="target">
+                            <label for="mode-target" class="toggle-option">Current & Target</label>
+                        </div>
+                    </div>
+
+                    <!-- Direct Input: Runs Required -->
+                    <div id="direct-input-group" class="input-group">
+                        <label for="runs-required">Runs Required <span class="required-star">*</span></label>
+                        <input type="number" id="runs-required" placeholder="e.g. 45" min="0">
+                    </div>
+
+                    <!-- Calculated Input: Target & Current -->
+                    <div id="target-input-group" class="input-group hidden">
+                        <div class="dual-inputs">
+                            <div class="sub-group">
+                                <label for="current-score">Current Score <span class="required-star">*</span></label>
+                                <input type="number" id="current-score" placeholder="Runs so far" min="0">
+                            </div>
+                            <div class="sub-group">
+                                <label for="target-score">Target Score <span class="required-star">*</span></label>
+                                <input type="number" id="target-score" placeholder="Total to win" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overs Input Mode -->
+                <div id="overs-toggle-section" class="mode-toggle-container">
+                    <span class="toggle-label-text">Overs Input: <span class="required-star">*</span></span>
+                    <div class="toggle-wrapper">
+                        <input type="radio" name="overs-mode" id="overs-direct" value="direct" checked>
+                        <label for="overs-direct" class="toggle-option">Overs Left</label>
+
+                        <input type="radio" name="overs-mode" id="overs-current" value="current">
+                        <label for="overs-current" class="toggle-option">Current & Max</label>
+                    </div>
+                </div>
+
+                <div id="overs-direct-group" class="input-group">
+                    <label for="overs-left">Overs Left <span class="required-star">*</span></label>
+                    <input type="number" id="overs-left" placeholder="e.g. 5.2" step="0.1" min="0">
+                </div>
+
+                <div id="overs-current-group" class="input-group hidden">
+                    <div class="dual-inputs">
+                        <div class="sub-group">
+                            <label for="current-overs">Current Over <span class="required-star">*</span></label>
+                            <input type="number" id="current-overs" placeholder="e.g. 44.4" step="0.1" min="0">
+                        </div>
+                        <div class="sub-group">
+                            <label for="max-overs">Max Overs <span class="required-star">*</span></label>
+                            <input type="number" id="max-overs" placeholder="e.g. 50" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="wickets-left">Wickets Left <span class="required-star">*</span></label>
+                    <input type="number" id="wickets-left" placeholder="e.g. 4" min="0" max="10" required>
+                </div>
+
+                <div class="batter-section">
+                    <h3>Current Batters</h3>
+                    <div class="batter-inputs">
+                        <div class="batter-box">
+                            <h4>Batter 1</h4>
+                            <div class="input-row">
+                                <input type="number" id="b1-runs" placeholder="Runs" min="0">
+                                <input type="number" id="b1-balls" placeholder="Balls" min="0">
+                            </div>
+                        </div>
+                        <div class="batter-box">
+                            <h4>Batter 2</h4>
+                            <div class="input-row">
+                                <input type="number" id="b2-runs" placeholder="Runs" min="0">
+                                <input type="number" id="b2-balls" placeholder="Balls" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="predict-btn">Calculate Probability</button>
+            </form>
+        </main>
+
+        <section id="result-section" class="result-card glass-panel hidden">
+            <div class="team-vs-display">
+                <div class="team-score">
+                    <span class="team-name val-batting-name">Batting Team</span>
+                    <span class="team-percent val-batting-percent">0%</span>
+                </div>
+                <div class="vs-divider">VS</div>
+                <div class="team-score">
+                    <span class="team-name val-bowling-name">Bowling Team</span>
+                    <span class="team-percent val-bowling-percent">0%</span>
+                </div>
+            </div>
+
+            <div class="gauge-container">
+                <div class="circular-progress" id="win-progress">
+                    <div class="inner-circle">
+                        <!-- Removed single percentage text, replaced by team breakdown above -->
+                        <span id="win-label">Win %</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-breakdown">
+                <div class="stat-item">
+                    <span class="label">Required Rate</span>
+                    <span class="value" id="rrr-display">0.00</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Projected Score</span>
+                    <span class="value" id="projected-score">0</span>
+                </div>
+            </div>
+            <p id="commentary" class="commentary-text"></p>
+
+            <div class="calculation-details">
+                <button type="button" id="toggle-details-btn" class="toggle-btn">Show Calculation Logic ▼</button>
+                <div id="calc-breakdown" class="breakdown-content hidden">
+                    <!-- JS will populate this -->
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
