@@ -5,7 +5,7 @@ const ASSETS_TO_CACHE = [
     './style.css',
     './script.js',
     './manifest.json',
-    './pwa_assets/icon-512.png'
+    './pwa_assets/icon-512.jpg'
 ];
 
 // Install Event: Cache assets
